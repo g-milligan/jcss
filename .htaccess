@@ -1,0 +1,10 @@
+#redirect local requested files to /proxy.php?err=404
+#Example: redirect http://jstyle:8080/DesktopModules/Escher/js/colorbox/colorbox.css to the proxy page
+#Proxy page --> http://jstyle:8080/proxy.php?url=http%3A%2F%2Fgodmustbesleeping.com%2FDesktopModules%2FEscher%2Fjs%2Fcolorbox%2Fcolorbox.css
+#http://stackoverflow.com/questions/5190206/apache-htaccess-how-do-i-redirect-for-files-that-arent-found-without-sending
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} -s [OR]
+RewriteCond %{REQUEST_FILENAME} -l [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^.*$ - [NC,L]
+RewriteRule ^.*$ /proxy.php?err=404 [NC,L]

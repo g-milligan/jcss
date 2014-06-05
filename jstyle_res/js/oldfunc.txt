@@ -1,0 +1,99 @@
+	//function to fix elements on the page that could ignore the z-index of the ui by overlapping it
+	function ui_fixOverlap(){
+		//INTERNAL FUNCTIONS----------------
+		//internal function to add wmode attribute and src query string to an element
+		var addWMode=function(elem){
+			//set the wmode attribute
+			elem.setAttribute('wmode','opaque');
+			var src = elem.src;
+			elem.setAttribute('src','#reload');
+			elem.setAttribute('src',src);
+			//elem.parentNode.removeChild(elem);
+			
+			/*var placeholder=document.createElement('ph');
+			elem.parentNode.insertBefore(placeholder, elem);
+			elem.parentNode.removeChild(elem);
+			setTimeout(function(){
+				elem.setAttribute('wmode','opaque');
+				placeholder.parentNode.insertBefore(elem, placeholder);
+				placeholder.parentNode.removeChild(placeholder);
+			},100);*/
+			
+			
+			/*var src=elem.src;
+			elem.setAttribute('src','#');
+			setTimeout(function(){
+				//if this element has a src
+				if(src){
+					//if src doesn't already have 'wmode=transparent'
+					if(src.indexOf('wmode=transparent')==-1){
+						var appendQs='wmode=transparent';
+						//if there is an anchor
+						var indexOfAnchor=src.lastIndexOf('#');
+						var anchorStr='';
+						if(indexOfAnchor!=-1){
+							//trim off the anchor, but save it so it can be re-added later
+							anchorStr=src.substring(indexOfAnchor);
+							src=src.substring(0,indexOfAnchor);
+						}
+						//if src contains ?
+						var indexOfQuote=src.lastIndexOf('?');
+						if (indexOfQuote!=-1){
+							//if there is a query string after ?
+							var qs=src.substring(indexOfQuote+1);
+							qs=qs.trim();
+							if (qs.length>0){
+								//the new query string must begin with & when tacked on to existing qs list
+								appendQs='&'+appendQs;
+							}
+						}else{
+							//src doesn't already contain ?
+							//the new query string must begin with ?
+							appendQs='?'+appendQs;
+						}
+						//add the 'wpmode=transparent' query string to the src PLUS the #anchor, if any
+						src+=appendQs+anchorStr;
+						//update the src on the element
+						elem.setAttribute('src',src);
+					}
+				}
+			},100);*/
+		};
+		//internal function to fix the overlap for one element
+		var fixOneElem=function(elem){
+			//if this is an element
+			if(elem.nodeType==1){
+				var tag=elem.tagName;tag=tag.toLowerCase();
+				//apply different fixes based on the tag's name
+				switch(tag){
+					case 'embed':addWMode(elem);break;
+					case 'iframe':addWMode(elem);break;
+					default:addWMode(elem);break;
+				}
+			}
+		};
+		//internal function to fix the overlap for certain elements
+		var fixOverlap=function(elems){
+			if(elems!=undefined){
+				if(elems.length>0){
+					//for each element
+					for(var e=0;e<elems.length;e++){
+						//fix one elem that could potentially overlap
+						fixOneElem(elems[e]);
+					}
+				}
+			}
+		};
+		//SELECT ELEMENTS-----------------
+		setTimeout(function(){
+			//if querySelectorAll is available
+			if (document.querySelectorAll){
+				var elems=document.querySelectorAll('embed,iframe');
+				fixOverlap(elems);
+			}else{
+				//querySelectorAll NOT available
+				var embeds=document.getElementsByTagName('embed');fixOverlap(embeds);
+				var iframes=document.getElementsByTagName('iframe');fixOverlap(iframes);
+			}
+		},2000);
+	}

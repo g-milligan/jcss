@@ -1,0 +1,10 @@
+{
+	"manifest_version": 2,
+	
+	"name": "G2 jStyle",
+	"description": "Edit CSS Styles in real time. Search/edit stylesheet content with more efficiency and power than with what's available in standard developer tools.",
+	"version": "1.0",
+	
+	"permissions": ["tabs", "activeTab"],
+	"browser_action": {"default_icon":"img/icon.png","default_popup":"popups/popup.html"}
+}

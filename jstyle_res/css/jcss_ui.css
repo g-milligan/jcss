@@ -1,0 +1,102 @@
+/*wrapper*/
+body#jstyle_undocked_ui{margin:0px;}
+jcss_ui#jcss_ui{}
+jcss_ui#jcss_ui * {box-sizing:border-box;-moz-box-sizing:border-box;}
+jcss_ui#jcss_ui.docked{position: fixed;width: 100%;bottom: 0px;height: 200px;background-color: #fff;z-index: 999999;display: block;box-shadow:0px -2px 3px rgba(0,0,0,.4);}
+/*resize handle*/
+jcss_ui#jcss_ui ui_resize_handle{display:none;cursor: ns-resize;border-bottom: solid 1px #ccc;position: absolute;top: 0px;left: 0px;width: 100%;height: 10px;box-shadow: inset 0px 0px 10px rgba(0,0,0,.4);}
+jcss_ui#jcss_ui.docked ui_resize_handle{display: block;}
+jcss_ui#jcss_ui.minimized ui_resize_handle{display: none;}
+jcss_ui#jcss_ui ui_resize_handle ui_resize_screen{display:none;position:fixed;top:0px;left:0px;width:100%;height:100%;}
+jcss_ui#jcss_ui ui_resize_handle.onresize ui_resize_screen{display:block;}
+/*ui stage*/
+jcss_ui#jcss_ui ui_stage{position:absolute;width:100%;height:100%;padding:47px 7px 7px 7px;display:block;}
+jcss_ui#jcss_ui ui_stage .pane{padding: 0px;position:relative;width:100%;height:100%;display:none;white-space:nowrap;}
+jcss_ui#jcss_ui ui_stage .pane.active{display:block;}
+/*hud*/
+jcss_ui#jcss_ui.minimized{height:30px !important;} /*minimized to show only the ui_hud heigth*/
+jcss_ui#jcss_ui ui_hud{position:absolute;top:0px;left:0px;width:100%;height:30px;line-height:30px;display:block;box-shadow:inset 0px 0px 20px #C9C2B7;border-bottom:inset 2px rgba(0,0,0,.2);background-color:#F1EEE7;}
+body#jstyle_undocked_ui jcss_ui#jcss_ui ui_stage{padding-top:37px;}
+jcss_ui#jcss_ui.docked ui_hud{top: 10px;}
+jcss_ui#jcss_ui.minimized ui_hud{top:0px;}
+jcss_ui#jcss_ui ui_main_btns, jcss_ui#jcss_ui ui_window_btns{position: absolute;top: 0px;height: 100%;line-height:inherit;display: block;}
+jcss_ui#jcss_ui ui_main_btns a, jcss_ui#jcss_ui ui_window_btns a,
+jcss_ui#jcss_ui ui_main_btns a:visited, jcss_ui#jcss_ui ui_window_btns a:visited,
+jcss_ui#jcss_ui ui_main_btns a:link, jcss_ui#jcss_ui ui_window_btns a:link
+{display: inline-block;padding: 0px 10px;height: 100%;min-width: 55px;line-height: inherit;text-align: center;text-decoration:none;cursor:pointer;background-position: center top;background-repeat: no-repeat;background-color: rgba(255,255,255,.4);border: solid 1px #ccc;border-bottom: none;border-top: none;
+-webkit-transition: background-color .2s linear;-moz-transition: background-color .2s linear;-ms-transition: background-color .2s linear;-o-transition: background-color .2s linear;transition: background-color .2s linear;}
+jcss_ui#jcss_ui ui_main_btns a:hover, jcss_ui#jcss_ui ui_window_btns a:hover{text-decoration:none;background-color: rgba(0,0,0,.4);color: #fff;background-position: center -30px;border: solid 1px transparent;border-bottom: none;border-top: none;}
+jcss_ui#jcss_ui ui_main_btns a:active, jcss_ui#jcss_ui ui_window_btns a:active{text-decoration:none;box-shadow:inset 0px 0px 20px #336600;background-color: rgba(0,153,0,.8);border: solid 1px transparent;border-bottom: none;border-top: none;}
+jcss_ui#jcss_ui ui_window_btns a.undock{background-image:url(../img/undock.png);}
+jcss_ui#jcss_ui ui_window_btns a.dock{background-image:url(../img/dock.png);}
+jcss_ui#jcss_ui ui_window_btns a.minimize{background-image:url(../img/minimize.png);}
+jcss_ui#jcss_ui ui_window_btns a.maximize{background-image:url(../img/maximize.png);}
+jcss_ui#jcss_ui.minimized ui_main_btns, jcss_ui#jcss_ui.minimized ui_window_btns a{display:none;}
+jcss_ui#jcss_ui.minimized ui_window_btns{width:100%;}
+jcss_ui#jcss_ui.minimized ui_window_btns a.maximize{display:inline-block;width:100%;}
+jcss_ui#jcss_ui ui_main_btns a{float:left;}
+jcss_ui#jcss_ui ui_window_btns a{float:right;}
+jcss_ui#jcss_ui ui_main_btns{left:0px;width:70%;}
+jcss_ui#jcss_ui ui_window_btns{right:0px;width:30%;}
+/*undocked ui placeholder*/
+jcss_ui_placeholder#jstyle_ui_placeholder{display:none;position: fixed;height: 200px;width: 100%;bottom: 0px;background-color: rgba(0,0,0,.4);z-index: 999999;box-shadow:0px -2px 2px rgba(0,0,0,.6);border-top: dashed 5px rgba(255,255,255,.4);}
+jcss_ui_placeholder#jstyle_ui_placeholder.active{display:block;}
+jcss_ui_placeholder#jstyle_ui_placeholder ui_buttons{padding:10px 0px;margin:0px 25%;width:50%;height:100%;display:table;position:absolute;top:0px;left:0px;right:0px;bottom:0px;box-sizing:border-box;-moz-box-sizing:border-box;}
+jcss_ui_placeholder#jstyle_ui_placeholder ui_buttons a,
+jcss_ui_placeholder#jstyle_ui_placeholder ui_buttons a:visited,
+jcss_ui_placeholder#jstyle_ui_placeholder ui_buttons a:link{display:table-cell;width:50%;height:100%;box-sizing:border-box;-moz-box-sizing:border-box;border:solid 7px transparent;box-shadow:inset 0px 0px 50px rgba(255,255,255,.8);border-radius:25px;font-size:50px;text-transform:uppercase;text-align:center;vertical-align:middle;color:rgba(255,255,255,.5);font-family:Impact, Charcoal, sans-serif;background-position:center center;background-repeat:no-repeat;background-size: 100% auto;text-shadow:-1px 1px rgba(0,0,0,.2);
+	-webkit-transition: all .1s linear;-moz-transition: all .1s linear;-ms-transition: all .1s linear;-o-transition: all .1s linear;transition: all .1s linear;}
+jcss_ui_placeholder#jstyle_ui_placeholder ui_buttons a:hover{color:rgba(0,0,0,.1);font-size:35px;text-decoration:none;box-shadow:inset 0px 0px 60px rgba(255,255,255,.95);}
+jcss_ui_placeholder#jstyle_ui_placeholder ui_buttons a:active{text-decoration:underline;background-color:#fff;}
+jcss_ui_placeholder#jstyle_ui_placeholder ui_buttons a.focus{background-image:url(../img/reveal.png);}
+jcss_ui_placeholder#jstyle_ui_placeholder ui_buttons a.dock{background-image:url(../img/dock_large.png);}
+/*ui scroll*/
+jcss_ui#jcss_ui ui_scroll{width:100%;height:100%;display:block;overflow-y:scroll;}
+/*ui sub-pane slide-out*/
+jcss_ui#jcss_ui .slide-out{position:relative;display:inline-block;height:100%;max-width:0%;max-height:0%;float:left;box-shadow:3px 0px 5px rgba(0,0,0,.2);background-color:#fff;
+	-webkit-transition: max-width .5s ease, max-height .5s ease;-moz-transition: max-width .5s ease, max-height .5s ease;-ms-transition: max-width .5s ease, max-height .5s ease;-o-transition: max-width .5s ease, max-height .5s ease;transition: max-width .5s ease, max-height .5s ease;}
+jcss_ui#jcss_ui .slide-out.expand, jcss_ui#jcss_ui .slide-out.pinned{max-width:100%;max-height:100%;}
+jcss_ui#jcss_ui .slide-out ui_scroll{border-top:solid 25px transparent;visibility:hidden;padding:7px 0px;box-shadow:inset 0px 0px 30px #D3CEC1;}
+jcss_ui#jcss_ui .slide-out.expanded ui_scroll,jcss_ui#jcss_ui .slide-out.pinned ui_scroll{visibility:visible;}
+jcss_ui#jcss_ui .slide-out ui_pane_title{position:absolute;top:0px;left:0px;display:block;height:25px;width:100%;background-color:#C9C2B7;}
+jcss_ui#jcss_ui .slide-out ui_pane_title ui_pane_ico{display:inline-block;height:inherit;width:35px;background-color:rgba(255,255,255,.7);border:solid 1px #ccc;border-top:none;border-bottom:none;background-repeat:no-repeat;background-position: center center;box-shadow:0px 0px 7px rgba(0,0,0,.3);}
+jcss_ui#jcss_ui .slide-out ui_pane_title a.ui_pin,
+jcss_ui#jcss_ui .slide-out ui_pane_title a.ui_pin:visited,
+jcss_ui#jcss_ui .slide-out ui_pane_title a.ui_pin:link
+{visibility:hidden;background-position:center bottom;background-repeat:no-repeat;background-image:url(../img/unpinned.png);height:inherit;width:35px;display:inline-block;float:right;position:absolute;right:0px;
+	-webkit-transition:background-color .2s linear;-moz-transition:background-color .2s linear;-ms-transition:background-color .2s linear;-o-transition:background-color .2s linear;transition:background-color .2s linear;}
+jcss_ui#jcss_ui .slide-out.pinned ui_pane_title a.ui_pin,
+jcss_ui#jcss_ui .slide-out.pinned ui_pane_title a.ui_pin:visited,
+jcss_ui#jcss_ui .slide-out.pinned ui_pane_title a.ui_pin:link
+{visibility:visible;background-image:url(../img/pinned.png);}
+jcss_ui#jcss_ui .slide-out.expanded ui_pane_title a.ui_pin,
+jcss_ui#jcss_ui .slide-out.expanded ui_pane_title a.ui_pin:visited,
+jcss_ui#jcss_ui .slide-out.expanded ui_pane_title a.ui_pin:link
+{visibility:visible;}
+jcss_ui#jcss_ui .slide-out ui_pane_title a.ui_pin:hover{background-position:center top;background-color:rgba(0,0,0,.4);}
+jcss_ui#jcss_ui .slide-out ui_pane_title a.ui_pin:active{box-shadow:inset 0px 0px 20px #336600;background-color:rgba(0,153,0,.8);}
+/*ui sub-pane width filler remainder*/
+jcss_ui#jcss_ui .fill-width{height:100%;display:inline-block;background-color:#ccc;white-space:normal;}
+/*PARTICULAR (SPECIFIC) SUB PANES...*/
+/*ui sheet list*/
+jcss_ui#jcss_ui ui_sheet_list ui_pane_title ui_pane_ico{background-image:url(../img/sheets_icon.png);}
+jcss_ui#jcss_ui ui_sheet_list ui_sheet{position:relative;display:block;
+	-webkit-transition: all .2s linear;-moz-transition: all .2s linear;-ms-transition: all .2s linear;-o-transition: all .2s linear;transition: all .2s linear;}
+jcss_ui#jcss_ui ui_sheet_list ui_sheet.hover{background-color:rgba(241,238,231,.8);}
+jcss_ui#jcss_ui ui_sheet_list ui_sheet a.sheet,
+jcss_ui#jcss_ui ui_sheet_list ui_sheet a.sheet:visited,
+jcss_ui#jcss_ui ui_sheet_list ui_sheet a.sheet:link{color:#6a6660;font-family: "Comic Sans MS", cursive, sans-serif;font-size:12px;line-height:14px;padding:5px 10px;display:inline-block;text-decoration:none;
+	-webkit-transition: all .1s linear;-moz-transition: all .1s linear;-ms-transition: all .1s linear;-o-transition: all .1s linear;transition: all .1s linear;}
+jcss_ui#jcss_ui ui_sheet_list ui_sheet a.sheet:hover{text-decoration:none;color:#918160;}
+jcss_ui#jcss_ui ui_sheet_list ui_sheet a.sheet:active{text-decoration:none;color:#99ccff;text-shadow:initial;}
+jcss_ui#jcss_ui ui_sheet_list ui_sheet sheet_popup{opacity:0;padding:3px 7px;margin:0px 7px;display:inline-block;
+	-webkit-transition: all .2s linear;-moz-transition: all .2s linear;-ms-transition: all .2s linear;-o-transition: all .2s linear;transition: all .2s linear;}
+jcss_ui#jcss_ui ui_sheet_list ui_sheet.disabled a.sheet{text-decoration:line-through;opacity:.6;}
+jcss_ui#jcss_ui ui_sheet_list ui_sheet.hover sheet_popup{opacity:.6;background-color:#fff;border-radius:10px;box-shadow:-1px 1px 4px rgba(0,0,0,.3);}
+jcss_ui#jcss_ui ui_sheet_list ui_sheet sheet_popup a,
+jcss_ui#jcss_ui ui_sheet_list ui_sheet sheet_popup a:visited,
+jcss_ui#jcss_ui ui_sheet_list ui_sheet sheet_popup a:link{font-family: "Comic Sans MS", cursive, sans-serif;font-size: 11px;text-decoration: none;color:#6a6660;}
+jcss_ui#jcss_ui ui_sheet_list ui_sheet sheet_popup a:hover{color:#3366cc;}
+jcss_ui#jcss_ui ui_sheet_list ui_sheet sheet_popup a.:active{}
+/*ui sheet editor*/
+jcss_ui#jcss_ui ui_sheet_editor ui_scroll{}
