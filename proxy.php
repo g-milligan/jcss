@@ -96,6 +96,23 @@
            }
        } 
     }
+    //transfer a substring from one string to another, eg:
+    //STRING_A = 'hello world!...'
+    //STRING_B = 'this is an example of a greeting: yo, wasup?'
+    //moveStartStrChunk(STRING_A, STRING_B, ':')
+    //STRING_A = 'hello world!...this is an example of a greeting:'
+    //STRING_B = ' yo, wasup?'
+    //(append whatever is removed from STRING_B, to STRING_A)
+    function moveStartStrChunk(&$addToStr,&$removeFromStr,$endOfChunk){
+        //if $removeFromStr contains substring, $endOfChunk
+        if(strpos($removeFromStr, $endOfChunk)!==false){
+            if(strlen($addToStr)<1){$addToStr='';}
+            //get the string before and including the next endOfChunk
+            $addToStr.=substr($removeFromStr, 0, strpos($removeFromStr, $endOfChunk)+strlen($endOfChunk));
+            //trim off the string before and including the endOfChunk
+            $removeFromStr=substr($removeFromStr, strpos($removeFromStr, $endOfChunk)+strlen($endOfChunk));
+        }
+    }
     //get a chunk of string between two tags that may contain nested tags
     function getStrChunk($str,$startTag='{',$endTag='}',$returnWrapTags=true){
         $returnStr='';
@@ -120,25 +137,44 @@
                             while($search){
                                 //if there is a next end tag
                                 if(strpos($searchStr, $endTag)!==false){
-                                    //if the next endTag is BEFORE the next startTag
-                                    if(strpos($searchStr, $endTag)<strpos($searchStr, $startTag)){
-                                        //get the string before and including the next endTag
-                                        $returnStr.=substr($searchStr, 0, strpos($searchStr, $endTag)+strlen($endTag));
-                                        //trim off the string before and including the endTag
-                                        $searchStr=substr($searchStr, strpos($searchStr, $endTag)+strlen($endTag));
+                                    //if there IS still a next start tag AND the next endTag is BEFORE the next startTag
+                                    if(strpos($searchStr, $startTag)!==false
+                                        && strpos($searchStr, $endTag)<strpos($searchStr, $startTag)){
+                                        //remove the sub-string (before + including $endTag) from $searchStr... 
+                                        //and add it to $returnStr
+                                        moveStartStrChunk($returnStr,$searchStr,$endTag);
                                         //count the end tag
                                         $endTagCount++;
                                     }else{
+                                        //no start tag OR next endTag is AFTER start tag...
                                         //if there is a next start tag
                                         if(strpos($searchStr, $startTag)!==false){
-                                            //get the string before and including the next startTag
-                                            $returnStr.=substr($searchStr, 0, strpos($searchStr, $startTag)+strlen($startTag));
-                                            //trim off the string before and including the startTag
-                                            $searchStr=substr($searchStr, strpos($searchStr, $startTag)+strlen($startTag));
+                                            //remove the sub-string (before + including $startTag) from $searchStr... 
+                                            //and add it to $returnStr
+                                            moveStartStrChunk($returnStr,$searchStr,$startTag);
                                             //count the start tag
                                             $startTagCount++;
                                         }else{
-                                            $search=false;
+                                            //no more start tags...
+                                            //while there are still end tags
+                                            while($search){
+                                                //if there is a next end tag
+                                                if(strpos($searchStr, $endTag)!==false){
+                                                    //remove the sub-string (before + including $endTag) from $searchStr... 
+                                                    //and add it to $returnStr
+                                                    moveStartStrChunk($returnStr,$searchStr,$endTag);
+                                                    //count the end tag
+                                                    $endTagCount++;
+                                                    //if there are an equal number of start vs end tags
+                                                    if($startTagCount==$endTagCount){
+                                                        $search=false;
+                                                        $foundChunk=true;
+                                                    }
+                                                }else{
+                                                    //no more end tags...
+                                                    $search=false;
+                                                } 
+                                            }
                                         }
                                     }
                                     //if there are an equal number of start vs end tags
@@ -154,6 +190,16 @@
                             if(!$foundChunk){
                                 //tack on the remaining string
                                 $returnStr.=$searchStr;
+                            }else{
+                                //found the complete string chunk with the proper start and end tags...
+                                //if not supposed to return the string wrapped in the tags
+                                if(!$returnWrapTags){
+                                    //if ends with the end tag
+                                    if(strrpos($returnStr, $endTag)===strlen($returnStr)-strlen($endTag)){
+                                        //remove the end tag
+                                        $returnStr=substr($returnStr, 0, strrpos($returnStr, $endTag));
+                                    }
+                                }
                             }
                             //if not supposed to return the string wrapped in the tags
                             if(!$returnWrapTags){
@@ -161,11 +207,6 @@
                                 if(strpos($returnStr, $startTag)===0){
                                     //remove the start tag
                                     $returnStr=substr($returnStr, strlen($startTag));
-                                }
-                                //if ends with the start tag
-                                if(strrpos($returnStr, $endTag)===strlen($returnStr)-strlen($endTag)){
-                                    //remove the end tag
-                                    $returnStr=substr($returnStr, 0, strrpos($returnStr, $endTag));
                                 }
                             }
                         }
@@ -175,9 +216,44 @@
         }
         return $returnStr;
     }
-    //make sure the content of a certain tag name is wrapped in cdata or <!-- --> so it's not considered HTML
-    function cdataTagContent($strContent, $tagName){
-        $startTag='<'.$tagName;$endTag='</'.$tagName.'>';
+    //make sure to restore < AND > inside an HTML node AFTER PHP's loadHTML has processed the HTML DOM
+    function getRestoredInlineTags($doc,$elem,$escGT,$escLT,$escAmp,&$changesMade){
+        //get the inline elem's text
+        $innerTxt=$elem->textContent;$hasEsc=false;
+        //if the <elem> contains text with a $escGT substring that represents '>'
+        if(strpos($innerTxt, $escGT)!==false){
+            //restore > inside the string
+            $innerTxt=str_replace($escGT, '>', $innerTxt);
+            $hasEsc=true;
+        }
+        //if the <elem> contains text with a $escLT substring that represents '<'
+        if(strpos($innerTxt, $escLT)!==false){
+            //restore < inside the string
+            $innerTxt=str_replace($escLT, '<', $innerTxt);
+            $hasEsc=true;
+        }
+        //if the <elem> contains text with a $escAmp substring that represents '&'
+        if(strpos($innerTxt, $escAmp)!==false){
+            //restore & inside the string
+            $innerTxt=str_replace($escAmp, '&', $innerTxt);
+            $hasEsc=true;
+        }
+        //if there were any restored escaped < or >
+        if($hasEsc){
+            $changesMade = true;
+            //clear the text inside the node
+            $elem->nodeValue='';
+            //create a cdata node, to hold the text, for the element
+            $cdata=$doc->createCDATASection($innerTxt);
+            //add the cdata to the element
+            $elem->appendChild($cdata);
+        }
+        return $elem;
+    }
+    //make sure the content of a certain tag name does NOT contain < NOR > substring text that can confuse PHP's loadHTML
+    function getRemovedInlineTags($strContent, $tagName, $escGT, $escLT, $escAmp){
+        $startTag='<'.$tagName; $endTag='</'.$tagName.'>';
+        $tempStartTag='-/>>|tEm.p'.$tagName.'/+Start!!)|';
         //if the start tag is in the string
         if (strpos(strtolower($strContent), $startTag) !== false) {
             //if the end tag is in the string
@@ -185,22 +261,32 @@
                 //make sure the start and end tags are lowercase
                 $strContent=str_replace(strtoupper($endTag), $endTag, $strContent);
                 $strContent=str_replace(strtoupper($startTag), $startTag, $strContent);  
-                
-                //*** while $startTag exists as a substring in $strContent...
-                
-                //get a full chunk, eg: "<script type="text/javascript">...content...</script>"
-                //get a full chunk, eg: "<style type="text/css">...content...</style>"
-                $fullChunkStr=getStrChunk($strContent,$startTag,$endTag);
-                //get the start chunk, eg: "<script type="text/javascript">"
-                //get the start chunk, eg: "<style type="text/css">"
-                $startChunkStr=getStrChunk($fullChunkStr,'<','>');
-                //get the inner text, eg: "...content..."
-                $innerStr=getStrChunk($fullChunkStr,$startChunkStr,$endTag,false);
-                //*** temporarily replace this $fullChunkStr in $strContent
-                //if the inner text is NOT blank
-                if(strlen(trim($innerStr))>0){
-                    //*** make sure the inner text is surrounded by <!-- --> 
+                //while $startTag exists as a substring in $strContent...
+                while(strpos($strContent, $startTag) !== false){
+                    //get a full chunk, eg: "<script type="text/javascript">...content...</script>"
+                    //get a full chunk, eg: "<style type="text/css">...content...</style>"
+                    $fullChunkStr=getStrChunk($strContent,$startTag,$endTag);
+                    //get the substring BEFORE $fullChunkStr
+                    $beforeChunk=substr($strContent, 0, strpos($strContent, $startTag));
+                    //get the substring AFTER $fullChunkStr
+                    $afterChunk=substr($strContent, strlen($beforeChunk)+strlen($fullChunkStr));
+                    //get the start tag chunk, eg: "<script type="text/javascript">"
+                    //get the start tag chunk, eg: "<style type="text/css">"
+                    $startTagChunkStr=getStrChunk($fullChunkStr,'<','>');
+                    //get inner string, eg: "...content..."
+                    $innerStr=substr($fullChunkStr, strlen($startTagChunkStr));
+                    $innerStr=substr($innerStr, 0, strrpos($innerStr, $endTag));
+                    //temporarily replace the first $startTag from $startTagChunkStr
+                    $startTagChunkStr=$tempStartTag.substr($startTagChunkStr, strlen($startTag));
+                    //replace all <, >, and & inside the innerStr with temporary placeholders, $escGT/$escLT/$escAmp
+                    $innerStr=str_replace('>', $escGT, $innerStr);
+                    $innerStr=str_replace('<', $escLT, $innerStr);
+                    $innerStr=str_replace('&', $escAmp, $innerStr);
+                    //concat $beforeChunk, AND $afterChunk together with the inner inline substring
+                    $strContent=$beforeChunk.$startTagChunkStr.$innerStr.$endTag.$afterChunk;
                 }
+                //restore all $startTag substrings
+                $strContent=str_replace($tempStartTag, $startTag, $strContent);
             }
         }
         return $strContent;
@@ -576,9 +662,12 @@
     //intercept the page content after changing some things, eg:
     //change the external stylesheet links to point to the internal proxy
     function proxy_page($urlContent, $pageUrl) {
-        //before loading urlContent as html, make sure the text inside inline <script> is CDATA
-        $urlContent=cdataTagContent($urlContent,'script');
-        //+++$urlContent=cdataTagContent($urlContent,'style');
+        //define unique strings to temporarily escape both &, <, and > inside inline <script> or <style> elements
+        $escGT='+|_/(_Gt_)/-_.|'; $escLT='-|_/(_Lt_)/-_.|'; $escAmp='a|_/(_amp_)/-_.|';
+        //before loading urlContent as html, make sure the text inside inline 
+        //<script> or <style> does not confuse PHP's loadHTML by including < or > inside the inner text
+        $urlContent=getRemovedInlineTags($urlContent,'script',$escGT,$escLT,$escAmp);
+        $urlContent=getRemovedInlineTags($urlContent,'style',$escGT,$escLT,$escAmp);
         //load the urlContent as an XML document 
         $doc = new DOMDocument();
         @$doc->loadHTML($urlContent); //supress HTML format warnings with @
@@ -632,10 +721,12 @@
                     if ($script->hasAttribute('src')) {
                         //get the src of the <script>
                         $src = $script->getAttribute('src');
-                        //replace the img src with a proxied src
+                        //replace the src with a proxied src
                         $script->setAttribute('src', getProxyUrl('js', $src, $domain));
                         $changesMade = true;
                     }
+                    //RESTORE ESCAPED CHARACTERS, < AND >
+                    $script=getRestoredInlineTags($doc,$script,$escGT,$escLT,$escAmp,$changesMade);
                 }
             }
             //<IMG>
@@ -652,6 +743,16 @@
                         $img->setAttribute('src', getProxyUrl('img', $src, $domain));
                         $changesMade = true;
                     }
+                }
+            }
+            //<STYLE>
+            $styles = $doc->getElementsByTagName('style');
+            //if there are any inline styles
+            if ($styles->length > 0) {
+                //for each <style>
+                foreach($styles as $style) {
+                    //RESTORE ESCAPED CHARACTERS, < AND >
+                    $style=getRestoredInlineTags($doc,$style,$escGT,$escLT,$escAmp,$changesMade);
                 }
             }
             //RESOURCE ADDONS, EG: EXTRA JAVASCRIPT AND STYLE FILES
