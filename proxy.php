@@ -401,57 +401,64 @@
             }
         }
         //if the url is not an absolute local file path
+        $isBase64=false;
         if (strpos($url, 'file:') !== 0) {
-            //if http doesn't appear first (relative url)
+            //if http doesn't appear first (relative url OR base64 url)
             if (strpos($url, 'http') !== 0) {
-                //get the domain of the current $pageurl (make sure $domain doesn't end with /page.html or /file.ext)
-                if ($domain==''){$domain = getUrlDomain($url);}
-                //if a domain was given
-                if ($domain !== '') {
-                    //if starts with ../
-                    if (strpos($url, '../') === 0) {
-                        //while url still contains '../'
-                        while(strpos($url, '../') !== false) {
-                            //remove one ../
-                            $url = substr($url, strlen('../'));
-                            //if domain contains /
-                            if (strpos($domain, '/') !== false) {
-                                //remove one directory from $domain, eg: http://google.com/dir/sub BECOMES http://google.com/dir
-                                $domain = substr($domain, 0, strrpos($domain, '/'));
+                //if the url is NOT a base64 data url
+                if(strpos($url, 'data:') !== 0){
+                    //get the domain of the current $pageurl (make sure $domain doesn't end with /page.html or /file.ext)
+                    if ($domain==''){$domain = getUrlDomain($url);}
+                    //if a domain was given
+                    if ($domain !== '') {
+                        //if starts with ../
+                        if (strpos($url, '../') === 0) {
+                            //while url still contains '../'
+                            while(strpos($url, '../') !== false) {
+                                //remove one ../
+                                $url = substr($url, strlen('../'));
+                                //if domain contains /
+                                if (strpos($domain, '/') !== false) {
+                                    //remove one directory from $domain, eg: http://google.com/dir/sub BECOMES http://google.com/dir
+                                    $domain = substr($domain, 0, strrpos($domain, '/'));
+                                }
+                            }
+                        } else {
+                            //if starts with /, eg: "/Portals/_default/Skins/godsleep/images/back_header_clouds.jpg"
+                            if (strpos($url, '/') === 0) {
+                                //strip the folders off of the domain, eg: "http://godmustbesleeping.com/" ...
+                                //trim off starting /
+                                $url = substr($url, 1);$url = trim($url);
+                                $firstFolder = $url;
+                                //if $url still has /
+                                if (strpos($url, '/') !== false) {
+                                    //get the first folder in $url, eg: "Portals"
+                                    $firstFolder = substr($firstFolder, 0, strpos($firstFolder, '/'));
+                                }
+                                //separate the protocol from the domain
+                                $protocol = substr($domain, 0, strrpos($domain, '//') + strlen('//'));
+                                $domain = substr($domain, strlen($protocol));
+                                //if the $domain contains with the first folder of the $url
+                                if (strpos($domain, '/'.$firstFolder) !== false) {
+                                    
+                                    //strip the extra folders off of the domain, eg: "godmustbesleeping.com/" ...
+                                    $domain = substr($domain, 0, strpos($domain, '/'.$firstFolder));
+                                }
+                                //add the protocol back to the domain
+                                $domain = $protocol . $domain;
                             }
                         }
-                    } else {
-                        //if starts with /, eg: "/Portals/_default/Skins/godsleep/images/back_header_clouds.jpg"
-                        if (strpos($url, '/') === 0) {
-                            //strip the folders off of the domain, eg: "http://godmustbesleeping.com/" ...
-                            //trim off starting /
-                            $url = substr($url, 1);$url = trim($url);
-                            $firstFolder = $url;
-                            //if $url still has /
-                            if (strpos($url, '/') !== false) {
-                                //get the first folder in $url, eg: "Portals"
-                                $firstFolder = substr($firstFolder, 0, strpos($firstFolder, '/'));
-                            }
-                            //separate the protocol from the domain
-                            $protocol = substr($domain, 0, strrpos($domain, '//') + strlen('//'));
-                            $domain = substr($domain, strlen($protocol));
-                            //if the $domain contains with the first folder of the $url
-                            if (strpos($domain, '/'.$firstFolder) !== false) {
-                                
-                                //strip the extra folders off of the domain, eg: "godmustbesleeping.com/" ...
-                                $domain = substr($domain, 0, strpos($domain, '/'.$firstFolder));
-                            }
-                            //add the protocol back to the domain
-                            $domain = $protocol . $domain;
-                        }
+                        //if $url starts with either / then trim it off
+                        if (strpos($url, '/') === 0) {$url = substr($url, 1);$url = trim($url);} 
+                        //if $domain ends with / then trim it off
+                        if (strrpos($domain, '/') === strlen($domain) - 1) {$domain = substr($domain, 0, strlen($domain) - 1);$domain = trim($domain);}
+                        //add the full domain before the relative url
+                        $url = $domain.'/'.$url;
+                        //$url = 'DOMAIN: '.$domain.' || URL:'.$url;
                     }
-                    //if $url starts with either / then trim it off
-                    if (strpos($url, '/') === 0) {$url = substr($url, 1);$url = trim($url);} 
-                    //if $domain ends with / then trim it off
-                    if (strrpos($domain, '/') === strlen($domain) - 1) {$domain = substr($domain, 0, strlen($domain) - 1);$domain = trim($domain);}
-                    //add the full domain before the relative url
-                    $url = $domain.'/'.$url;
-                    //$url = 'DOMAIN: '.$domain.' || URL:'.$url;
+                }else{
+                    //the url IS a base64 data url...
+                    $isBase64=true;
                 }
             }
         }
@@ -459,26 +466,29 @@
         $doProxy = false;
         $proxyTypes = getProxyTypes();
         if (array_key_exists ($typeKey, $proxyTypes)) {
-            //if the generic 'url' $typeKey wasn't given
-            if ($typeKey != 'url') {
-                $doProxy = true;
-            } else {
-                //have to figure out if this url points to a file type that should be proxied
-                $ext = getUrlExt($url);
-                //if the extension was found
-                if ($ext != '') {
-                    //file extension types that should be proxied
-                    $proxyExts = array(
-                        '.css'=>'1', '.html'=>'1', '.htm'=>'1',
-                        '.php'=>'1', '.phtml'=>'1', '.asp'=>'1', '.aspx'=>'1',
-                    );
-                    //if this extension type should be proxied
-                    if (array_key_exists ($ext, $proxyExts)) {
+            //if not a base64 URL
+            if(!$isBase64){
+                //if the generic 'url' $typeKey wasn't given
+                if ($typeKey != 'url') {
+                    $doProxy = true;
+                } else {
+                    //have to figure out if this url points to a file type that should be proxied
+                    $ext = getUrlExt($url);
+                    //if the extension was found
+                    if ($ext != '') {
+                        //file extension types that should be proxied
+                        $proxyExts = array(
+                            '.css'=>'1', '.html'=>'1', '.htm'=>'1',
+                            '.php'=>'1', '.phtml'=>'1', '.asp'=>'1', '.aspx'=>'1',
+                        );
+                        //if this extension type should be proxied
+                        if (array_key_exists ($ext, $proxyExts)) {
+                            $doProxy = true;
+                        }
+                    } else {
+                        //extension not found... like www.google.com/ ??
                         $doProxy = true;
                     }
-                } else {
-                    //extension not found... like www.google.com/ ??
-                    $doProxy = true;
                 }
             }
         }
